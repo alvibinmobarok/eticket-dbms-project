@@ -140,13 +140,21 @@
 <h1 class="font-h2 text-h2 text-on-surface mb-2">Welcome back</h1>
 <p class="font-body-md text-slate-500">Enter your credentials to access your tickets</p>
 </div>
-<form class="space-y-6">
+@if ($errors->any())
+    <div class="mb-4 text-red-600">
+        @foreach ($errors->all() as $error)
+            <p>{{ $error }}</p>
+        @endforeach
+    </div>
+@endif
+<form method="POST" action="{{ route('login') }}" class="space-y-6">
+    @csrf
 <!-- Email Field -->
 <div class="flex flex-col gap-2">
 <label class="font-label-xs text-label-xs text-slate-500 uppercase tracking-wider" for="email">Email Address</label>
 <div class="relative group">
 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-500 transition-colors" data-icon="mail">mail</span>
-<input class="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 font-body-md transition-all" id="email" placeholder="name@company.com" type="email"/>
+<input class="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 font-body-md transition-all" id="email" name="email" placeholder="name@company.com" type="email"/>
 </div>
 </div>
 <!-- Password Field -->
@@ -157,7 +165,7 @@
 </div>
 <div class="relative group">
 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-500 transition-colors" data-icon="lock">lock</span>
-<input class="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 font-body-md transition-all" id="password" placeholder="••••••••" type="password"/>
+<input class="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 font-body-md transition-all" id="password" name="password" placeholder="••••••••" type="password"/>
 </div>
 </div>
 <!-- Login Button -->

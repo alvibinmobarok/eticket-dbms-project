@@ -139,6 +139,13 @@
 <p class="font-body-md text-on-surface-variant">Join the community for premium event access.</p>
 </div>
 <!-- Registration Form -->
+@if ($errors->any())
+    <div class="mb-4 text-red-600">
+        @foreach ($errors->all() as $error)
+            <p>{{ $error }}</p>
+        @endforeach
+    </div>
+@endif
 <form method="POST" action="{{ route('register') }}" class="space-y-gutter">
 @csrf
 <!-- Full Name -->

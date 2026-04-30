@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -62,5 +64,21 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         //
+    }
+    public function loadBalance(Request $request)
+    {
+        // ✅ basic validation (dummy card check)
+        $request->validate([
+            'card_number' => 'required|min:12|max:19',
+            'amount' => 'required|numeric|min:1',
+        ]);
+
+        $user = Auth::user();
+
+        // ✅ add balance
+        $user->balance += $request->amount;
+        $user->save();
+
+        return back()->with('success', 'Balance loaded successfully!');
     }
 }
