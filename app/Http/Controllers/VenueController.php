@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Venue;
+use Illuminate\Support\Facades\DB;
 
 class VenueController extends Controller
 {
@@ -15,11 +15,15 @@ class VenueController extends Controller
             'location' => 'required|string|max:255',
         ]);
 
-        Venue::create([
-            'venue_name' => $request->venue_name,
-            'capacity' => $request->capacity,
-            'location' => $request->location,
-        ]);
+        DB::insert(
+            "INSERT INTO venue (venue_name, capacity, location)
+             VALUES (?, ?, ?)",
+            [
+                $request->venue_name,
+                $request->capacity,
+                $request->location
+            ]
+        );
 
         return redirect()->back()->with('success', 'Venue added successfully!');
     }

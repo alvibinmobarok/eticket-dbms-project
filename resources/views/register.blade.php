@@ -139,6 +139,18 @@
 <p class="font-body-md text-on-surface-variant">Join the community for premium event access.</p>
 </div>
 <!-- Registration Form -->
+@if(session('success'))
+    <div class="mb-4 text-green-600">
+        {{ session('success') }}
+    </div>
+@endif
+
+@if(session('error'))
+    <div class="mb-4 text-red-600">
+        {{ session('error') }}
+    </div>
+@endif
+
 @if ($errors->any())
     <div class="mb-4 text-red-600">
         @foreach ($errors->all() as $error)
@@ -146,7 +158,7 @@
         @endforeach
     </div>
 @endif
-<form method="POST" action="{{ route('register') }}" class="space-y-gutter">
+<form method="POST" action="{{ route('register.submit') }}" class="space-y-gutter">
 @csrf
 <!-- Full Name -->
 <div>

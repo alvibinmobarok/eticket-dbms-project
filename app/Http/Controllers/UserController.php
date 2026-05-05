@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -67,18 +65,68 @@ class UserController extends Controller
     }
     public function loadBalance(Request $request)
     {
-        // ✅ basic validation (dummy card check)
         $request->validate([
             'card_number' => 'required|min:12|max:19',
             'amount' => 'required|numeric|min:1',
         ]);
 
-        $user = Auth::user();
+        $userId = session('user_id');
 
-        // ✅ add balance
-        $user->balance += $request->amount;
-        $user->save();
+        if (!$userId) {
+            return redirect()->route('login')->with('error', 'Please login first');
+        }
+
+        // Get current balance
+        $user = DB::selectOne(
+            "SELECT balance FROM users WHERE id = ?",
+            [$userId]
+        );
+
+        $newBalance = $user->balance + $request->amount;
+
+        DB::update("UPDATE users SET balance = ? WHERE id = ?", [$newBalance, $userId]);
+
+        session(['user_balance' => $newBalance]);
 
         return back()->with('success', 'Balance loaded successfully!');
     }
+    public function userProfile()
+    {
+        if (!session()->has('user_id')) {
+            return redirect()->route('login');
+        }
+
+        $events = DB::select("
+        SELECT 
+            e.id,
+            e.event_name,
+            e.event_date,
+            e.event_time,
+            e.category_name,
+            e.description,
+            v.venue_name,
+            v.location,
+
+            MIN(CASE WHEN s.seat_type = 'regular' THEN s.price END) AS regular_price,
+            MIN(CASE WHEN s.seat_type = 'vip' THEN s.price END) AS vip_price,
+
+            SUM(CASE WHEN s.seat_type = 'regular' AND s.status = 'available' THEN 1 ELSE 0 END) AS regular_left,
+            SUM(CASE WHEN s.seat_type = 'vip' AND s.status = 'available' THEN 1 ELSE 0 END) AS vip_left
+
+        FROM events e
+        JOIN venue v ON e.id = v.id
+        LEFT JOIN seats s ON e.id = s.event_id
+        GROUP BY 
+            e.id,
+            e.event_name,
+            e.event_date,
+            e.event_time,
+            e.category_name,
+            e.description,
+            v.venue_name,
+            v.location
+        ");
+
+        return view('user_profile', compact('events'));
+}
 }

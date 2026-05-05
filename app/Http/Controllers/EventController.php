@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Event;
+use Illuminate\Support\Facades\DB;
 
 class EventController extends Controller
 {
@@ -15,17 +15,22 @@ class EventController extends Controller
             'event_time' => 'required',
             'category_name' => 'required|string|max:255',
             'description' => 'required|string',
-            'venue_id' => 'required|exists:venue,id', // use venues,id if your table is venues
+            'venue_id' => 'required'
         ]);
 
-        Event::create([
-            'event_name' => $request->event_name,
-            'event_date' => $request->event_date,
-            'event_time' => $request->event_time,
-            'category_name' => $request->category_name,
-            'description' => $request->description,
-            'venue_id' => $request->venue_id,
-        ]);
+        DB::insert(
+            "INSERT INTO events
+            (event_name, event_date, event_time, category_name, description, venue_id)
+            VALUES (?, ?, ?, ?, ?, ?)",
+            [
+                $request->event_name,
+                $request->event_date,
+                $request->event_time,
+                $request->category_name,
+                $request->description,
+                $request->venue_id
+            ]
+        );
 
         return redirect()->back()->with('success', 'Event added successfully!');
     }

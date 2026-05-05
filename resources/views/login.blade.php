@@ -140,14 +140,18 @@
 <h1 class="font-h2 text-h2 text-on-surface mb-2">Welcome back</h1>
 <p class="font-body-md text-slate-500">Enter your credentials to access your tickets</p>
 </div>
-@if ($errors->any())
-    <div class="mb-4 text-red-600">
-        @foreach ($errors->all() as $error)
-            <p>{{ $error }}</p>
-        @endforeach
+@if(session('success'))
+    <div class="mb-4 text-green-600">
+        {{ session('success') }}
     </div>
 @endif
-<form method="POST" action="{{ route('login') }}" class="space-y-6">
+
+@if(session('error'))
+    <div class="mb-4 text-red-600">
+        {{ session('error') }}
+    </div>
+@endif
+<form method="POST" action="{{ route('login.submit') }}" class="space-y-6">
     @csrf
 <!-- Email Field -->
 <div class="flex flex-col gap-2">

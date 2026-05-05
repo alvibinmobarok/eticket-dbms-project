@@ -136,9 +136,9 @@
 <div id="profileMenu" class="hidden absolute right-0 mt-3 w-64 bg-white rounded-xl shadow-[0_20px_40px_rgba(0,0,0,0.08)] border border-slate-100 py-4 z-50 opacity-100 scale-100 transition-all origin-top-right">
 <div class="px-6 pb-3 border-b border-slate-50">
 <p class="font-h3 text-body-md font-bold text-on-surface">
-{{ auth()->user()->user_name }}
+{{ session('user_name') }}
 </p>
-<p class="text-label-sm text-slate-500">Balance: {{ auth()->user()->balance }}</p>
+<p class="text-label-sm text-slate-500">Balance: {{ session('user_balance', 0) }}</p>
 <button id="loadBalanceBtn" class="mt-2 text-label-sm text-primary hover:underline">
     Load Balance
 </button>
@@ -176,25 +176,6 @@
 <!-- Card 1 -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
 @foreach($events as $event)
-    @php
-        $regularPrice = $event->seats
-            ->where('seat_type', 'regular')
-            ->min('price');
-
-        $vipPrice = $event->seats
-            ->where('seat_type', 'vip')
-            ->min('price');
-
-        $regularLeft = $event->seats
-            ->where('seat_type', 'regular')
-            ->where('status', 'available')
-            ->count();
-
-        $vipLeft = $event->seats
-            ->where('seat_type', 'vip')
-            ->where('status', 'available')
-            ->count();
-    @endphp
 
     <div
         class="event-card cursor-pointer group bg-white rounded-xl border border-slate-100 overflow-hidden hover:shadow-[0_20px_40px_rgba(0,0,0,0.04)] transition-all duration-300"
@@ -202,13 +183,14 @@
         data-title="{{ $event->event_name }}"
         data-date="{{ $event->event_date }}"
         data-time="{{ $event->event_time }}"
-        data-location="{{ $event->venue->location ?? 'No location' }}"
-        data-venue="{{ $event->venue->venue_name ?? 'No venue' }}"
+        data-location="{{ $event->location ?? 'No location' }}"
+        data-venue="{{ $event->venue_name ?? 'No venue' }}"
         data-desc="{{ $event->description }}"
-        data-regular-price="{{ $regularPrice ?? 0 }}"
-        data-vip-price="{{ $vipPrice ?? 0 }}"
-        data-regular-left="{{ $regularLeft }}"
-        data-vip-left="{{ $vipLeft }}"
+        data-regular-price="{{ $event->regular_price ?? 0 }}"
+        data-vip-price="{{ $event->vip_price ?? 0 }}"
+        data-regular-left="{{ $event->regular_left ?? 0 }}"
+        data-vip-left="{{ $event->vip_left ?? 0 }}"
+        data-event-id="{{ $event->id }}"
     >
         <div class="aspect-video relative overflow-hidden">
             <img
@@ -230,7 +212,7 @@
             <div class="flex justify-between items-center mt-4">
                 <span class="text-label-sm text-slate-500 font-medium">From</span>
                 <span class="font-h3 text-primary text-body-lg">
-                    {{ $regularPrice ?? 'N/A' }} BDT
+                    {{ $event->regular_price ?? 'N/A' }} BDT
                 </span>
             </div>
         </div>
@@ -460,7 +442,7 @@ const backdrop = document.getElementById('balanceBackdrop');
 const cardInput = document.getElementById('cardNumber');
 const amountInput = document.getElementById('amount');
 
-let currentBalance = parseFloat("{{ auth()->user()->balance }}");
+let currentBalance = parseFloat("{{ session('user_balance', 0) }}");
 
 loadBtn.addEventListener('click', () => {
     modal.classList.remove('hidden');
