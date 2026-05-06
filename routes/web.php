@@ -9,6 +9,7 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SeatController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DiscountController;
 
 Route::get("/",[HomeController::class, 'home'])->name('home');
 
@@ -36,3 +37,34 @@ Route::post('/events', [EventController::class, 'store'])->name('events.store');
 Route::post('/seats/generate', [SeatController::class, 'generate'])->name('seats.generate');
 
 Route::post('/load-balance', [UserController::class, 'loadBalance'])->name('load.balance');
+
+Route::post('/cart/add', [UserController::class, 'addToCart'])
+    ->name('cart.add');
+
+Route::get('/checkout', [UserController::class, 'checkout'])
+    ->name('checkout');
+
+Route::post('/checkout/confirm', [UserController::class, 'confirmCheckout'])
+    ->name('checkout.confirm');
+
+Route::post('/cart/increase/{cart_id}', [UserController::class, 'increaseCart'])
+    ->name('cart.increase');
+
+Route::post('/cart/decrease/{cart_id}', [UserController::class, 'decreaseCart'])
+    ->name('cart.decrease');
+
+Route::post('/cart/remove/{cart_id}', [UserController::class, 'removeCart'])
+    ->name('cart.remove');
+
+Route::get('/venues', [VenueController::class, 'showVenues'])->name('venues');
+
+Route::post('/submit-review', [UserController::class, 'submitReview'])
+    ->name('submit.review');
+
+Route::get('/venue-reviews/{venueId}', [UserController::class, 'showReviews'])->name('venue.reviews');
+
+Route::post('/discount', [DiscountController::class, 'store'])
+    ->name('discount.store');
+
+Route::post('/discount/apply', [UserController::class, 'applyDiscount'])
+    ->name('discount.apply');

@@ -3,10 +3,20 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class AuthController extends Controller
 {
+    private function connect()
+    {
+        $conn = mysqli_connect("localhost", "root", "", "laravel");
+
+        if (!$conn) {
+            die("Connection failed: " . mysqli_connect_error());
+        }
+
+        return $conn;
+    }
+
     public function showRegister()
     {
         return view('register');
@@ -26,29 +36,28 @@ class AuthController extends Controller
             'password' => 'required|min:4'
         ]);
 
-        $existingUser = DB::selectOne(
-            "SELECT * FROM users WHERE email = ?",
-            [$request->email]
-        );
+        $conn = $this->connect();
 
-        if ($existingUser) {
+        $userName = mysqli_real_escape_string($conn, $request->user_name);
+        $email = mysqli_real_escape_string($conn, $request->email);
+        $phone = mysqli_real_escape_string($conn, $request->phone);
+        $hashedPassword = password_hash($request->password, PASSWORD_DEFAULT);
+
+        $checkSql = "SELECT * FROM users WHERE email = '$email'";
+        $result = mysqli_query($conn, $checkSql);
+
+        if (mysqli_num_rows($result) > 0) {
             return back()->with('error', 'Email already exists');
         }
 
-        $hashedPassword = password_hash($request->password, PASSWORD_DEFAULT);
+        $sql = "
+            INSERT INTO users 
+            (user_name, email, phone, password, role, balance)
+            VALUES
+            ('$userName', '$email', '$phone', '$hashedPassword', 'customer', 0)
+        ";
 
-        DB::insert(
-            "INSERT INTO users (user_name, email, phone, password, role, balance)
-             VALUES (?, ?, ?, ?, ?, ?)",
-            [
-                $request->user_name,
-                $request->email,
-                $request->phone,
-                $hashedPassword,
-                'customer',
-                0
-            ]
-        );
+        mysqli_query($conn, $sql);
 
         return redirect('/login')->with('success', 'Registration successful. Please login.');
     }
@@ -60,18 +69,22 @@ class AuthController extends Controller
             'password' => 'required'
         ]);
 
-        $user = DB::selectOne(
-            "SELECT * FROM users WHERE email = ?",
-            [$request->email]
-        );
+        $conn = $this->connect();
 
-        if ($user && password_verify($request->password, $user->password)) {
+        $email = mysqli_real_escape_string($conn, $request->email);
+
+        $sql = "SELECT * FROM users WHERE email = '$email'";
+        $result = mysqli_query($conn, $sql);
+
+        $user = mysqli_fetch_assoc($result);
+
+        if ($user && password_verify($request->password, $user['password'])) {
             session([
-                'user_id' => $user->id,
-                'user_name' => $user->user_name,
-                'user_email' => $user->email,
-                'user_role' => $user->role,
-                'user_balance' => $user->balance
+                'user_id' => $user['id'],
+                'user_name' => $user['user_name'],
+                'user_email' => $user['email'],
+                'user_role' => $user['role'],
+                'user_balance' => $user['balance']
             ]);
 
             return redirect('/user_profile');

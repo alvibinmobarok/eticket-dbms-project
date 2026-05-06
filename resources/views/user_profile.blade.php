@@ -118,16 +118,17 @@
 <div class="text-2xl font-black tracking-tighter text-teal-600 dark:text-teal-400 font-h1">TIX</div>
 <nav class="hidden md:flex gap-8 items-center">
 <a class="text-teal-600 dark:text-teal-400 font-semibold border-b-2 border-teal-600 transition-colors" href="#">Events</a>
-<a class="text-slate-500 dark:text-slate-400 font-medium hover:text-teal-500 transition-colors" href="#">Venues</a>
-<a class="text-slate-500 dark:text-slate-400 font-medium hover:text-teal-500 transition-colors" href="#">Support</a>
+<a class="text-slate-500 dark:text-slate-400 font-medium hover:text-teal-500 transition-colors" href="{{ route('venues') }}">
+    Venues
+</a>
 </nav>
 <div class="flex items-center gap-6">
-<button class="relative text-on-surface-variant hover:text-primary transition-colors active:scale-95 duration-200">
+<a href="{{ route('checkout') }}" class="relative text-on-surface-variant hover:text-primary transition-colors active:scale-95 duration-200">
 <span class="material-symbols-outlined" data-icon="shopping_cart">shopping_cart</span>
 <span class="absolute -top-1 -right-1 w-4 h-4 bg-primary text-white text-[10px] flex items-center justify-center rounded-full">
     {{ session('cart_count', 0) }}
 </span>
-</button>
+</a>
 <div class="relative group">
 <button id="profileBtn" class="flex items-center gap-2 focus:outline-none">
 <img alt="User avatar" class="w-9 h-9 rounded-full border-2 border-primary/20" data-alt="A professional close-up headshot of a middle-aged man with a friendly expression. He has short brown hair and is wearing a minimalist charcoal grey shirt. The background is a soft-focus studio setting with cool, neutral tones. The lighting is bright and even, reinforcing a high-end, modern digital interface aesthetic that feels clean and approachable." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBxt78UrfCVD5K9U4Tc-kYB8aSjBDvH0c_4wt6ZaArRyLPAvY__Eu1nPmSrQZVAOHvYP4GqhOeLTwAeuQXdfI3oa04jR2Vnm7irbpoZdYdM1Wiy_gvr9V8dWrSY1VsKF4G3--gkkH1WmB6xrwQ4UE4YynkzvdYPsD4k-vOabVWTop13548lNhgFWcyZelhw96Ft3f0o6-MTTyNxEzWASRq2vHfavT7ZsxW0GCpq7AyvqnxwZvvh4xsugqUrlpsA6rI3D8DMiTnmQA-c"/>
@@ -265,7 +266,18 @@
 <span class="material-symbols-outlined text-error text-[18px]" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
 <span id="ticketsLeft" class="text-label-xs font-bold text-error">12 tickets left</span>
 </div>
-<button class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-xl">Buy Now</button>
+<form method="POST" action="{{ route('cart.add') }}">
+    @csrf
+
+    <input type="hidden" name="event_id" id="cartEventId">
+    <input type="hidden" name="ticket_type" id="cartTicketType">
+    <input type="hidden" name="quantity" id="cartQuantity">
+    <input type="hidden" name="price" id="cartPrice">
+
+    <button type="submit" class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-xl">
+        Add to Cart
+    </button>
+</form>
 </div></div></div></div>
 
 <!-- Load Balance Modal -->
@@ -378,6 +390,11 @@ function updateTicketInfo() {
 
     modal.querySelector('#modalPrice').textContent = price + ' BDT';
     modal.querySelector('#ticketsLeft').textContent = left + ' tickets left';
+
+    document.getElementById('cartEventId').value = selectedCard.dataset.eventId;
+    document.getElementById('cartTicketType').value = ticketType;
+    document.getElementById('cartQuantity').value = qty;
+    document.getElementById('cartPrice').value = price;
 }
 
 document.getElementById('ticketType').addEventListener('change', () => {
@@ -385,21 +402,7 @@ document.getElementById('ticketType').addEventListener('change', () => {
     updateTicketInfo();
     renderQty();
 });
-document.querySelectorAll('.event-card').forEach(card=>{
- card.addEventListener('click',()=>{
-   let d=data[card.id];
-   modal.classList.remove('hidden');
-   modal.querySelector('#modalType').textContent=d.type;
-   modal.querySelector('#modalTitle').textContent=d.title;
-   modal.querySelector('#modalDate').textContent=d.date;
-   modal.querySelector('#modalLocation').textContent=d.location;
-   modal.querySelector('#modalDesc').textContent=d.desc;
-   modal.querySelector('#modalPrice').textContent=d.price;
-   modal.querySelector('#ticketsLeft').textContent=d.left;
-   qty=1;
-   renderQty();
- });
-});
+
 closeBtns.forEach(el=>el&&el.addEventListener('click',()=>modal.classList.add('hidden')));
 
 const qtyValue=document.getElementById('qtyValue');
@@ -409,6 +412,7 @@ let qty=1;
 
 function renderQty(){
   qtyValue.textContent=qty;
+  document.getElementById('cartQuantity').value = qty;
 }
 
 qtyMinus.addEventListener('click',function(e){

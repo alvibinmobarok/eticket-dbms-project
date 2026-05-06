@@ -132,7 +132,7 @@
 <div class="max-w-[1280px] mx-auto px-margin py-stack-lg">
 <!-- Welcome Header -->
 <!-- Primary Actions Grid -->
-<section class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+<section class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
 <div id="addVenueBtn" class="group relative overflow-hidden bg-white border border-outline-variant rounded-2xl hover:bg-secondary-container transition-all duration-300 cursor-pointer flex flex-col items-center text-center shadow-sm hover:shadow-md active:scale-[0.98] px-12 py-24 min-h-[500px] justify-center">
 <div class="inline-flex items-center justify-center w-24 h-24 bg-primary-container/20 text-primary rounded-2xl mb-8 group-hover:scale-110 transition-transform">
 <span class="material-symbols-outlined text-6xl">add</span>
@@ -146,6 +146,13 @@
 </div>
 <h3 class="font-h3 text-3xl text-on-surface mb-4">Events</h3>
 <p class="font-body-md text-body-md text-secondary max-w-sm">Curate experiences, manage ticketing, and upload event promotional assets.</p>
+</div>
+<div id="addDiscountBtn" class="group relative overflow-hidden bg-white border border-outline-variant rounded-2xl hover:bg-secondary-container transition-all duration-300 cursor-pointer flex flex-col items-center text-center shadow-sm hover:shadow-md active:scale-[0.98] px-12 py-24 min-h-[500px] justify-center">
+    <div class="inline-flex items-center justify-center w-24 h-24 bg-primary-container/20 text-primary rounded-2xl mb-8 group-hover:scale-110 transition-transform">
+        <span class="material-symbols-outlined text-6xl">sell</span>
+    </div>
+    <h3 class="font-h3 text-3xl text-on-surface mb-4">Discounts</h3>
+    <p class="font-body-md text-body-md text-secondary max-w-sm">Create coupon codes, set discount percentages, and expiry dates.</p>
 </div>
 </section>
 </div>
@@ -255,6 +262,46 @@ Add
 </button>
 </form>
 </div>
+</div>
+
+      <!--Add Discount Modal-->
+      <div id="discountModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8">
+    <div id="discountModalBackdrop" class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"></div>
+
+    <div class="relative w-full max-w-lg bg-white rounded-2xl shadow-[0_40px_80px_rgba(0,0,0,0.12)] overflow-hidden">
+        <div class="flex items-center justify-between px-8 py-6 border-b border-slate-100">
+            <div>
+                <p class="text-label-xs font-bold text-primary tracking-widest uppercase mb-1">Discount</p>
+                <h2 class="font-h2 text-h2 text-on-surface">Add Discount Code</h2>
+            </div>
+            <button id="closeDiscountModal" class="text-slate-400 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <form method="POST" action="{{ route('discount.store') }}" class="p-8 space-y-5">
+            @csrf
+
+            <div>
+                <label for="code" class="block text-label-sm text-on-surface mb-2">Coupon Code</label>
+                <input id="code" name="code" type="text" class="w-full rounded-xl border-outline-variant focus:border-primary focus:ring-primary" placeholder="Example: EID20">
+            </div>
+
+            <div>
+                <label for="discount_percent" class="block text-label-sm text-on-surface mb-2">Discount Percent</label>
+                <input id="discount_percent" name="discount_percent" type="number" min="1" max="100" class="w-full rounded-xl border-outline-variant focus:border-primary focus:ring-primary" placeholder="Example: 20">
+            </div>
+
+            <div>
+                <label for="expiry_date" class="block text-label-sm text-on-surface mb-2">Expiry Date</label>
+                <input id="expiry_date" name="expiry_date" type="date" class="w-full rounded-xl border-outline-variant focus:border-primary focus:ring-primary">
+            </div>
+
+            <button type="submit" class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-xl shadow-lg shadow-primary/20 transition-all active:scale-[0.98]">
+                Add Discount
+            </button>
+        </form>
+    </div>
 </div>
 
 <section class="mt-12">
@@ -421,6 +468,29 @@ document.addEventListener('DOMContentLoaded', function () {
 
   closeSeatModal.addEventListener('click', closeSeatPopup);
   seatModalBackdrop.addEventListener('click', closeSeatPopup);
+
+  const addDiscountBtn = document.getElementById('addDiscountBtn');
+const discountModal = document.getElementById('discountModal');
+const closeDiscountModal = document.getElementById('closeDiscountModal');
+const discountModalBackdrop = document.getElementById('discountModalBackdrop');
+
+if (addDiscountBtn && discountModal) {
+    addDiscountBtn.addEventListener('click', function () {
+        discountModal.classList.remove('hidden');
+    });
+}
+
+function closeDiscountPopup() {
+    discountModal.classList.add('hidden');
+}
+
+if (closeDiscountModal) {
+    closeDiscountModal.addEventListener('click', closeDiscountPopup);
+}
+
+if (discountModalBackdrop) {
+    discountModalBackdrop.addEventListener('click', closeDiscountPopup);
+}
 });
 </script>
 </body></html>

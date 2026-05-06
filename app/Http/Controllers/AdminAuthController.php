@@ -3,10 +3,20 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class AdminAuthController extends Controller
 {
+    private function connect()
+    {
+        $conn = mysqli_connect("localhost", "root", "", "laravel");
+
+        if (!$conn) {
+            die("Connection failed: " . mysqli_connect_error());
+        }
+
+        return $conn;
+    }
+
     public function showLogin()
     {
         return view('admin_login');
@@ -19,29 +29,34 @@ class AdminAuthController extends Controller
             'password' => ['required'],
         ]);
 
-        $user = DB::selectOne(
-            "SELECT * FROM users WHERE email = ?",
-            [$request->email]
-        );
+        $conn = $this->connect();
 
-        if (!$user || !password_verify($request->password, $user->password)) {
+        $email = mysqli_real_escape_string($conn, $request->email);
+
+        $sql = "SELECT * FROM users WHERE email = '$email'";
+
+        $result = mysqli_query($conn, $sql);
+
+        $user = mysqli_fetch_assoc($result);
+
+        if (!$user || !password_verify($request->password, $user['password'])) {
             return back()->withErrors([
                 'email' => 'Invalid credentials',
             ]);
         }
 
-        if ($user->role !== 'admin') {
+        if ($user['role'] !== 'admin') {
             return back()->withErrors([
                 'email' => 'Not authorized as admin',
             ]);
         }
 
         session([
-            'user_id' => $user->id,
-            'user_name' => $user->user_name,
-            'user_email' => $user->email,
-            'user_role' => $user->role,
-            'user_balance' => $user->balance
+            'user_id' => $user['id'],
+            'user_name' => $user['user_name'],
+            'user_email' => $user['email'],
+            'user_role' => $user['role'],
+            'user_balance' => $user['balance']
         ]);
 
         return redirect()->route('admin.dashboard');
@@ -53,16 +68,33 @@ class AdminAuthController extends Controller
             abort(403);
         }
 
-        $venues = DB::select("SELECT * FROM venue");
+        $conn = $this->connect();
 
-        $events = DB::select("
+        $venueSql = "SELECT * FROM venue";
+        $venueResult = mysqli_query($conn, $venueSql);
+
+        $venues = [];
+
+        while ($row = mysqli_fetch_object($venueResult)) {
+            $venues[] = $row;
+        }
+
+        $eventSql = "
             SELECT 
                 e.*,
                 v.venue_name,
                 v.location
             FROM events e
-            LEFT JOIN venue v ON e.id = v.id
-        ");
+            LEFT JOIN venue v ON e.venue_id = v.id
+        ";
+
+        $eventResult = mysqli_query($conn, $eventSql);
+
+        $events = [];
+
+        while ($row = mysqli_fetch_object($eventResult)) {
+            $events[] = $row;
+        }
 
         return view('admin_dashboard', compact('venues', 'events'));
     }
